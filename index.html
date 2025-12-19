@@ -35,7 +35,12 @@
     }
 
     *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
-    html,body{ height:100%; }
+    html,body{ height:100%; width: 100%; }
+    
+    html {
+      background-color: var(--bg0); /* Fix white bar */
+      overflow: hidden;
+    }
     
     body{
       margin:0;
@@ -43,6 +48,7 @@
       font-family: var(--font-ui);
       background: linear-gradient(135deg, var(--bg0), var(--bg1));
       overflow: hidden; /* App like */
+      width: 100%;
     }
 
     /* English Text Helper */
@@ -56,10 +62,11 @@
     .amb-blob{
       position: absolute;
       border-radius: 50%;
-      filter: blur(80px);
+      filter: blur(60px); /* Reduce blur for perf */
       z-index: -1;
       opacity: 0.4;
-      animation: drift 20s infinite alternate;
+      will-change: transform;
+      animation: drift 20s infinite alternate linear; /* Linear is smoother usually for ambient */
     }
     .amb-1 { top: -10%; right: -10%; width: 50vw; height: 50vw; background: var(--primary); animation-duration: 25s; }
     .amb-2 { bottom: -10%; left: -10%; width: 60vw; height: 60vw; background: var(--accent); animation-duration: 30s; }
@@ -91,10 +98,11 @@
       align-items: center;
       padding: 12px 16px;
       background: rgba(255,255,255,0.03);
-      backdrop-filter: blur(10px);
+      /* backdrop-filter: blur(10px); REMOVED for smoothness */
       border: 1px solid var(--stroke);
       border-radius: 20px;
       margin-bottom: 16px;
+      will-change: transform, opacity;
     }
 
     .brand {
@@ -130,14 +138,17 @@
       background: var(--card);
       border: 1px solid var(--stroke);
       border-radius: var(--radius);
-      backdrop-filter: blur(20px);
+      /* backdrop-filter: blur(20px); REMOVED for smoothness, huge fps gain */
+      background: rgba(15, 23, 42, 0.6); /* Slightly darker opaque fallback */
       padding: 24px;
       display: flex;
       flex-direction: column;
       position: relative;
       overflow-y: auto;
+      overflow-x: hidden;
       box-shadow: var(--shadow);
       transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      will-change: transform;
     }
 
     /* Start Screen */
