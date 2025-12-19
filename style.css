@@ -40,13 +40,13 @@ body {
   position: fixed; 
   inset: 0;
   width: 100%;
-  height: 100%;
+  height: 100%; /* Fallback */
+  height: 100dvh;
   
-  /* Prevent any scroll on body */
+  /* CSS Grid Layout - The most reliable centering method */
+  display: grid;
+  place-items: start center; /* Vertically start (top), Horizontally center */
   overflow: hidden; 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
 /* English Text Helper */
@@ -71,7 +71,6 @@ body {
 .amb-1 { 
   width: 50vw; height: 50vw; 
   background: var(--primary); 
-  /* Move to Top-Right safely */
   transform: translate(60vw, -10vh);
   animation: drift1 25s infinite alternate linear; 
 }
@@ -79,7 +78,6 @@ body {
 .amb-2 { 
   width: 60vw; height: 60vw; 
   background: var(--accent); 
-  /* Move to Bottom-Left safely */
   transform: translate(-10vw, 60vh);
   animation: drift2 30s infinite alternate linear; 
 }
@@ -99,14 +97,13 @@ body {
 
 /* LAYOUT */
 .app {
-  /* App becomes the scrollable container if needed, but actually .card scrolls */
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%; /* Stretch to fixed body */
+  height: 100%; 
   max-width: 600px;
   
-  /* Centering */
+  /* Grid handles centering, but margins help safety */
   margin: 0 auto;
   
   padding: 16px;
@@ -118,7 +115,7 @@ body {
   
   position: relative;
   z-index: 1;
-  overflow: hidden; /* Clip anything attempting to leave app */
+  overflow: hidden; 
 }
 
 /* Header */
