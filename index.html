@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="ckb" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Prolog Quiz - Sorani Edition</title>
+  
+  <!-- Noto Kufi Arabic is great for UI headings, Noto Sans Arabic for body -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@100..900&family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg0:#0f172a;
+      --bg1:#1e1b4b;
+      --card: rgba(255,255,255,.05);
+      --card-active: rgba(255,255,255,.1);
+      --stroke: rgba(255,255,255,.1);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      
+      /* Vivid Colors */
+      --primary: #8b5cf6;
+      --primary-glow: rgba(139, 92, 246, 0.5);
+      --accent: #06b6d4;
+      --good: #10b981;
+      --bad: #ef4444;
+      --warn: #f59e0b;
+
+      --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      --radius: 24px;
+      --font-ui: 'Noto Kufi Arabic', sans-serif;
+      --font-en: ui-sans-serif, system-ui, sans-serif;
+    }
+
+    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+    html,body{ height:100%; }
+    
+    body{
+      margin:0;
+      color:var(--text);
+      font-family: var(--font-ui);
+      background: linear-gradient(135deg, var(--bg0), var(--bg1));
+      overflow: hidden; /* App like */
+    }
+
+    /* English Text Helper */
+    .en {
+      font-family: var(--font-en);
+      direction: ltr;
+      text-align: left;
+    }
+
+    /* Ambient Background blobs */
+    .amb-blob{
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      z-index: -1;
+      opacity: 0.4;
+      animation: drift 20s infinite alternate;
+    }
+    .amb-1 { top: -10%; right: -10%; width: 50vw; height: 50vw; background: var(--primary); animation-duration: 25s; }
+    .amb-2 { bottom: -10%; left: -10%; width: 60vw; height: 60vw; background: var(--accent); animation-duration: 30s; }
+    
+    @keyframes drift {
+      0% { transform: translate(0,0) scale(1); }
+      100% { transform: translate(-20px, 20px) scale(1.1); }
+    }
+
+    /* Particles Canvas */
+    #fx { position:fixed; inset:0; z-index:0; pointer-events:none; }
+
+    /* LAYOUT */
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--stroke);
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-icon {
+      font-size: 24px;
+    }
+    .brand-text h1 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 800;
+    }
+    .brand-text span {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .mini-score {
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(6, 182, 212, 0.1);
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+
+    /* Main Card */
+    .card {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      backdrop-filter: blur(20px);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-y: auto;
+      box-shadow: var(--shadow);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Start Screen */
+    .screen-center {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      height: 100%;
+    }
+    .screen-center h2 { 
+      font-size: 28px; 
+      margin-bottom: 16px; 
+      background: linear-gradient(to right, #fff, #94a3b8); 
+      -webkit-background-clip: text; 
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
+    .screen-center p { color: var(--muted); line-height: 1.6; margin-bottom: 32px; font-size: 15px; }
+
+    /* Buttons */
+    .btn {
+      background: var(--card-active);
+      border: 1px solid var(--stroke);
+      color: white;
+      padding: 16px 32px;
+      border-radius: 16px;
+      font-family: var(--font-ui);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary { 
+      background: linear-gradient(135deg, var(--primary), #7c3aed); 
+      border: none;
+      box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3);
+    }
+    .btn-secondary { background: transparent; border: 1px solid var(--stroke); }
+
+    /* Progress */
+    .progress-bar {
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 10px var(--accent);
+    }
+
+    /* Question */
+    .q-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-family: var(--font-en); /* Q1/50 looks better in EN font */
+    }
+    .q-text {
+      font-size: 18px;
+      line-height: 1.5;
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: white;
+      text-align: left; /* English question */
+      direction: ltr;   /* English question */
+    }
+
+    /* Choices */
+    .choices { display: flex; flex-direction: column; gap: 12px; }
+    
+    .choice {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--stroke);
+      border-radius: 16px;
+      padding: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.2s;
+      
+      /* Force LTR for English answers */
+      direction: ltr; 
+      text-align: left;
+      
+      /* opacity: 0; removed to prevent disappearing on anim switch due to base style */
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    
+    /* Stagger delays */
+    .choice:nth-child(1) { animation-delay: 0.1s; }
+    .choice:nth-child(2) { animation-delay: 0.2s; }
+    .choice:nth-child(3) { animation-delay: 0.3s; }
+    .choice:nth-child(4) { animation-delay: 0.4s; }
+    
+    .choice:active { transform: scale(0.98); background: rgba(255,255,255,0.08); }
+    
+    .choice-tag {
+      width: 32px; 
+      height: 32px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .choice.correct {
+      border-color: var(--good);
+      background: rgba(16, 185, 129, 0.15);
+      animation: successPulse 0.4s ease-out forwards;
+    }
+    .choice.correct .choice-tag { background: var(--good); color: #fff; }
+
+    .choice.wrong {
+      border-color: var(--bad);
+      background: rgba(239, 68, 68, 0.15);
+      animation: shake 0.4s ease-in-out;
+    }
+    .choice.wrong .choice-tag { background: var(--bad); color: #fff; }
+
+    /* Navigation Footer */
+    .nav-footer {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .nav-btn {
+      flex: 1;
+      padding: 14px;
+    }
+
+    /* Results */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      margin: 24px 0;
+    }
+    .stat-box {
+      background: rgba(255,255,255,0.05);
+      padding: 16px;
+      border-radius: 16px;
+      text-align: center;
+      animation: popIn 0.5s ease backwards;
+    }
+    .stat-box:nth-child(1) { animation-delay: 0.1s; }
+    .stat-box:nth-child(2) { animation-delay: 0.2s; }
+    .stat-box:nth-child(3) { animation-delay: 0.3s; }
+    .stat-box:nth-child(4) { animation-delay: 0.4s; }
+
+    .stat-val { font-size: 24px; font-weight: 800; font-family: var(--font-en); }
+    .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* Animations */
+    .fade-enter { animation: fadeIn 0.4s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    @keyframes slideInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    @keyframes successPulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.4); }
+      100% { transform: scale(1); }
+    }
+    
+    .pop { animation: pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+    .anim-enter { animation: slideInUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+  </style>
+</head>
+<body>
+
+  <!-- Backgrounds -->
+  <div class="amb-blob amb-1"></div>
+  <div class="amb-blob amb-2"></div>
+  <canvas id="fx"></canvas>
+
+  <div class="app">
+    
+    <!-- Header -->
+    <header class="header anim-enter">
+      <div class="brand">
+        <div class="logo-icon">⚡</div>
+        <div class="brand-text">
+          <h1>تاقیکردنەوەی پرۆلۆگ</h1>
+          <span>٥٠ پرسیار • ستایلی نوێ</span>
+        </div>
+      </div>
+      <div id="miniScore" class="mini-score en" style="display:none">0</div>
+    </header>
+
+    <!-- VIEWS -->
+    
+    <!-- 1. Start View -->
+    <div id="view-start" class="card screen-center anim-enter">
+      <div style="font-size: 64px; margin-bottom: 20px; animation: floatIcon 3s ease-in-out infinite;">🚀</div>
+      <style>@keyframes floatIcon { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }</style>
+      <h2>ئامادەیت بۆ تاقیکردنەوە؟</h2>
+      <button class="btn btn-primary" onclick="startQuiz()">دەستپێکردن</button>
+    </div>
+
+    <!-- 2. Quiz View -->
+    <div id="view-quiz" class="card" style="display:none">
+      <div class="progress-bar"><div class="fill" id="progressFill"></div></div>
+      
+      <div class="q-meta">
+        <span id="qCount">Question 1/50</span>
+        <!-- Force LTR for English technical terms if needed, layout handles it -->
+      </div>
+      
+      <!-- English Question wrapped in .en class -->
+      <div class="q-text en anim-enter" id="qText"></div>
+
+      <div class="choices" id="choicesList">
+        <!-- Choices go here -->
+      </div>
+
+      <div class="nav-footer">
+        <button class="btn btn-secondary nav-btn" onclick="prevQ()">پێشوو</button>
+        <button class="btn btn-primary nav-btn" id="btnNext" onclick="nextQ()">دواتر</button>
+      </div>
+    </div>
+
+    <!-- 3. Result View -->
+    <div id="view-result" class="card screen-center" style="display:none">
+      <div style="font-size: 64px; margin-bottom: 20px;">🏆</div>
+      <h2>ئەنجامی کۆتایی</h2>
+      <p>ماندوو نەبیت! ئەوەی خوارەوە ئاستی تۆ دەردەخات.</p>
+      
+      <div class="stats-grid anim-enter">
+        <div class="stat-box">
+          <div class="stat-val" style="color:var(--good)" id="resScore">0</div>
+          <div class="stat-label">نمرەی ڕاست</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" style="color:var(--accent)" id="resPct">0%</div>
+          <div class="stat-label">ڕێژەی سەدی</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" style="color:var(--warn)" id="resWrong">0</div>
+          <div class="stat-label">نمرەی هەڵە</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" style="color:var(--muted)" id="resTotal">50</div>
+          <div class="stat-label">کۆی گشتی</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="restart()">دووبارەکردنەوە</button>
+    </div>
+
+  </div>
+
+<script>
+/* DATA (English Content preserved) */
+const QUESTIONS = [
+  { q: "1. Functional Programming mainly follows which architecture?", opts: ["Abstract model","Object-oriented model","Von-Neumann architecture","Declarative model"], ans: 2 },
+  { q: "2. Logic Programming mainly deals with:", opts: ["Sequential steps","Objects and their relationships","Hardware architecture","Memory management"], ans: 1 },
+  { q: "3. Functional Programming syntax is based on:", opts: ["Horn clauses","Logic formulae","Sequence of statements","Facts and rules"], ans: 2 },
+  { q: "4. Logic Programming syntax is mainly:", opts: ["Machine instructions","Procedural steps","Logic formulae (Horn clauses)","Assembly code"], ans: 2 },
+  { q: "5. In Functional Programming, computation occurs by:", opts: ["Deduction","Pattern matching","Executing statements sequentially","Inference"], ans: 2 },
+  { q: "6. In Logic Programming, computation is done by:", opts: ["Executing loops","Deducting clauses","Sequential execution","Compiling objects"], ans: 1 },
+  { q: "7. In Functional Programming, logic and control are:", opts: ["Separated","Independent","Mixed together","Abstracted"], ans: 2 },
+  { q: "8. In Logic Programming, logic and control can be:", opts: ["Mixed","Compiled","Ignored","Separated"], ans: 3 },
+  { q: "9. Prolog stands for:", opts: ["Programming Logic","Program Logical","PROgramming in LOGics","Procedural Logic"], ans: 2 },
+  { q: "10. Prolog belongs to which generation of programming languages?", opts: ["First","Second","Third","Fourth"], ans: 3 },
+  { q: "11. Prolog mainly supports which programming paradigm?", opts: ["Procedural","Object-oriented","Declarative","Imperative"], ans: 2 },
+  { q: "12. Prolog is especially suitable for:", opts: ["Numeric computation","File handling","Symbolic and non-numeric computation","Graphics programming"], ans: 2 },
+  { q: "13. In Prolog, the programmer specifies:", opts: ["How to solve the problem","Hardware details","What the problem is","Control flow"], ans: 2 },
+  { q: "14. Which of the following is NOT a basic element of Prolog?", opts: ["Facts","Rules","Queries","Classes"], ans: 3 },
+  { q: "15. Facts in Prolog are:", opts: ["Conditionally true","Unconditionally true","Always false","Recursive"], ans: 1 },
+  { q: "16. Which of the following is an example of a fact?", opts: ["Tom is happy if he eats","father(X,Y)","Tom is a cat","brother(X,Y)"], ans: 2 },
+  { q: "17. A Prolog rule represents:", opts: ["Explicit relationship","Conditional relationship","Numeric computation","Loop structure"], ans: 1 },
+  { q: "18. The symbol :- in Prolog means:", opts: ["AND","OR","If / is implied by","Equal to"], ans: 2 },
+  { q: "19. The left-hand side of :- is called:", opts: ["Body","Clause","Predicate","Head"], ans: 3 },
+  { q: "20. The right-hand side of :- is called:", opts: ["Head","Fact","Body","Variable"], ans: 2 },
+  { q: "21. Queries in Prolog are used to:", opts: ["Define rules","Store facts","Ask questions","Compile programs"], ans: 2 },
+  { q: "22. A Knowledge Base consists of:", opts: ["Facts only","Rules only","Queries only","Facts and rules"], ans: 3 },
+  { q: "23. In Prolog, names starting with uppercase letters represent:", opts: ["Atoms","Numbers","Variables","Predicates"], ans: 2 },
+  { q: "24. Facts and rules together form:", opts: ["Program flow","Knowledge Base","Query engine","Compiler"], ans: 1 },
+  { q: "25. Relations in Prolog represent:", opts: ["Loops","Arithmetic operations","Relationships between objects","File systems"], ans: 2 },
+  { q: "26. Which predicate defines a parent relationship?", opts: ["child(X,Y)","parent(X,Y)","father(X,Y,Z)","relation(X,Y)"], ans: 1 },
+  { q: "27. A brother relationship requires:", opts: ["Same gender only","Same parent and male","Same age","Same name"], ans: 1 },
+  { q: "28. To avoid a person being his own brother, we use:", opts: ["=:=","==","\\==","!="], ans: 2 },
+  { q: "29. Which relationship is recursive in nature?", opts: ["Brother","Sister","Parent","Predecessor"], ans: 3 },
+  { q: "30. A Prolog program consists of clauses ending with:", opts: ["Semicolon","Colon","Comma","Full stop"], ans: 3 },
+  { q: "31. Which of the following is a variable in Prolog?", opts: ["bob","liz","X","pat"], ans: 2 },
+  { q: "32. Logic programming is based on:", opts: ["Procedures","Sequential algorithms","Facts and rules","File system"], ans: 2 },
+  { q: "33. What is the correct way to define that Pam is female in Prolog?", opts: ["female = pam.","pam(female).","female(pam).","sex(pam)."], ans: 2 },
+  { q: "34. Which language is an example of logic programming?", opts: ["Python","Prolog","C++","Java"], ans: 1 },
+  { q: "35. What is a \"fact\" in Prolog?", opts: ["A rule that is sometimes true","A variable that stores values","A predicate that is always true","A type of query"], ans: 2 },
+  { q: "36. Queries in Prolog are used to:", opts: ["Delete facts","Add rules","Ask questions","Write algorithms"], ans: 2 },
+  { q: "37. In Prolog, facts and rules must always end with:", opts: ["A semicolon (;)","A comma (,)","A colon (:)","A full stop (.)"], ans: 3 },
+  { q: "38. What is the \"if\" symbol in Prolog syntax?", opts: ["-->",":=","::",":-"], ans: 3 },
+  { q: "39. In the rule grandfather(X, Y) :- father(X, Z), parent(Z, Y)., what is required for X to be Y's grandfather?", opts: ["Z must be Y's grandfather","X must be father of Y directly","X must be father of Z, and Z must be parent of Y","Y must be father of Z"], ans: 2 },
+  { q: "40. How is an uncle relationship defined correctly in Prolog?", opts: ["uncle(X,Z) :- brother(X,Y), parent(Y,Z).","uncle(X,Z) :- parent(X,Y), parent(Y,Z).","uncle(X,Z) :- parent(Z,X), brother(Z,Y).","uncle(X,Z) :- male(X), parent(Y,Z)."], ans: 0 },
+  { q: "41. Which of the following is an atom?", opts: ["X","123","tom","day(9,jun,2017)"], ans: 2 },
+  { q: "42. Which of the following is a structure?", opts: ["tom","100","X","point(10,25)"], ans: 3 },
+  { q: "43. Variables in Prolog must start with:", opts: ["Lowercase letter","Digit","Uppercase letter or underscore","Special symbol"], ans: 2 },
+  { q: "44. Which of the following is a valid variable?", opts: ["tom","student_list","Student_list","123X"], ans: 2 },
+  { q: "45. Anonymous variables are written as:", opts: ["X","__","?","_"], ans: 3 },
+  { q: "46. Anonymous variables are mainly used when:", opts: ["Variable value is important","Value should not be revealed","Loop is required","Recursion is used"], ans: 1 },
+  { q: "47. Each anonymous variable is treated as:", opts: ["Same","Global","Different","Constant"], ans: 2 },
+  { q: "48. Prolog inference is based on:", opts: ["Dijkstra algorithm","Robinson's Resolution Principle","Bubble sort","Backpropagation"], ans: 1 },
+  { q: "49. The first Prolog was developed in:", opts: ["1965","1968","1970","1981"], ans: 2 },
+  { q: "50. Which of the following is NOT an application of Prolog?", opts: ["Natural Language Understanding","Robot Planning","Web page design","Intelligent Database Retrieval"], ans: 2 }
+];
+
+/* STATE */
+let idx = 0;
+let userAnswers = new Array(QUESTIONS.length).fill(null);
+let score = 0;
+
+/* UI REFERENCES */
+const viewStart = document.getElementById('view-start');
+const viewQuiz = document.getElementById('view-quiz');
+const viewResult = document.getElementById('view-result');
+const miniScore = document.getElementById('miniScore');
+
+const qText = document.getElementById('qText');
+const qCount = document.getElementById('qCount');
+const choicesList = document.getElementById('choicesList');
+const progressFill = document.getElementById('progressFill');
+const btnNext = document.getElementById('btnNext');
+
+/* LOGIC */
+function startQuiz() {
+  viewStart.style.display = 'none';
+  viewQuiz.style.display = 'flex'; // Card uses flex
+  renderQuestion();
+  miniScore.style.display = 'block';
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[idx];
+  
+  // Update Meta
+  qCount.innerHTML = `Question <span class='en'>${idx + 1}/${QUESTIONS.length}</span>`;
+  const pct = ((idx+1) / QUESTIONS.length) * 100;
+  progressFill.style.width = pct + '%';
+  
+  // Animation: Reflow trigger
+  qText.classList.remove('anim-enter');
+  void qText.offsetWidth; // trigger reflow
+  qText.classList.add('anim-enter');
+  
+  qText.textContent = q.q;
+  
+  // Choices
+  choicesList.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  
+  q.opts.forEach((optText, i) => {
+    const div = document.createElement('div');
+    // Important: We don't remove existing choice class, we assume it has popIn anim
+    div.className = 'choice'; 
+    
+    if(userAnswers[idx] === i) {
+      if(userAnswers[idx] === q.ans) div.classList.add('correct');
+      else div.style.borderColor = 'var(--bad)'; // Keep it simpler on load
+    }
+
+    div.onclick = () => selectAnswer(i, div);
+    
+    div.innerHTML = `
+      <div class="choice-tag">${letters[i]}</div>
+      <div style="flex:1">${optText}</div>
+      ${userAnswers[idx] !== null && i === q.ans ? '✅' : ''}
+    `;
+    
+    choicesList.appendChild(div);
+  });
+  
+  // Button State
+  btnNext.disabled = userAnswers[idx] === null;
+  btnNext.textContent = (idx === QUESTIONS.length - 1) ? 'تەواوکردن' : 'دواتر';
+}
+
+function selectAnswer(i, el) {
+  if(userAnswers[idx] !== null) return; // Locked
+  
+  // Haptics
+  if(navigator.vibrate) navigator.vibrate(10);
+  
+  userAnswers[idx] = i;
+  const correct = QUESTIONS[idx].ans;
+  
+  // update UI
+  const allChoices = choicesList.children;
+  for(let c of allChoices) c.classList.remove('correct', 'wrong');
+  
+  if(i === correct) {
+    el.classList.add('correct');
+    score++;
+    miniScore.textContent = score;
+    miniScore.classList.add('pop'); // Add pop effect if we had css for it
+  } else {
+    el.classList.add('wrong');
+    allChoices[correct].classList.add('correct'); // Show real answer
+    allChoices[correct].innerHTML += ' ✅';
+    if(navigator.vibrate) navigator.vibrate([30,50,30]);
+  }
+  
+  btnNext.disabled = false;
+}
+
+function nextQ() {
+  if(userAnswers[idx] === null) return;
+  
+  if(idx < QUESTIONS.length - 1) {
+    idx++;
+    renderQuestion();
+  } else {
+    finishQuiz();
+  }
+}
+
+function prevQ() {
+  if(idx > 0) {
+    idx--;
+    renderQuestion();
+  }
+}
+
+function finishQuiz() {
+  viewQuiz.style.display = 'none';
+  viewResult.style.display = 'flex';
+  miniScore.style.display = 'none';
+  
+  document.getElementById('resScore').textContent = score;
+  document.getElementById('resTotal').textContent = QUESTIONS.length;
+  document.getElementById('resWrong').textContent = QUESTIONS.length - score;
+  document.getElementById('resPct').textContent = Math.round((score/QUESTIONS.length)*100) + '%';
+  
+  // Confetti
+  if(navigator.vibrate) navigator.vibrate([50,50,50,50,50]);
+}
+
+function restart() {
+  idx = 0;
+  score = 0;
+  userAnswers.fill(null);
+  miniScore.textContent = '0';
+  viewResult.style.display = 'none';
+  startQuiz();
+}
+
+/* Background FX */
+const cvs = document.getElementById('fx');
+const ctx = cvs.getContext('2d');
+let w, h;
+const parts = [];
+
+window.onresize = () => {
+  w = cvs.width = window.innerWidth;
+  h = cvs.height = window.innerHeight;
+};
+window.onresize();
+
+for(let i=0; i<40; i++) {
+  parts.push({
+    x: Math.random()*w, y: Math.random()*h,
+    vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5,
+    s: Math.random()*2
+  });
+}
+
+function loop() {
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  parts.forEach(p => {
+    p.x += p.vx; p.y += p.vy;
+    if(p.x < 0) p.x = w; if(p.x > w) p.x = 0;
+    if(p.y < 0) p.y = h; if(p.y > h) p.y = 0;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.s, 0, Math.PI*2);
+    ctx.fill();
+  });
+  requestAnimationFrame(loop);
+}
+loop();
+
+</script>
+</body>
+</html>
